@@ -17,11 +17,12 @@ func SetupRoutes(router *gin.Engine, dbConn *sql.DB) {
 	pingHandler := handlers.NewPingHandler()
 	public.GET("/ping", pingHandler.Ping)
 
-	// users route
-	userHandler := handlers.NewUserHandler(queries)
-	public.POST("/register", userHandler.RegisterUser)
+	// auth route
+	authHandler := handlers.NewAuthHandler(queries)
+	public.POST("/register", authHandler.RegisterUser)
 
 	// protected routes
+	userHandler := handlers.NewUserHandler(queries)
 	protected := router.Group("/api")
 	// protected.Use(AuthMiddleware())
 	protected.GET("/admins", userHandler.GetAdmins)
