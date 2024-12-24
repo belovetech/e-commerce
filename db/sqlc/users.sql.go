@@ -9,46 +9,77 @@ import (
 	"context"
 )
 
-const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password, role, created_at, updated_at FROM users WHERE email = $1
-`
-
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Password,
-		&i.Role,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const insertUser = `-- name: InsertUser :one
+const createUser = `-- name: CreateUser :one
 INSERT INTO users (email, password, role)
 VALUES ($1, $2, $3)
-RETURNING id, email, password, role, created_at, updated_at
+RETURNING id, email, role
 `
 
-type InsertUserParams struct {
+type CreateUserParams struct {
 	Email    string
 	Password string
 	Role     string
 }
 
-func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, insertUser, arg.Email, arg.Password, arg.Role)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Password,
-		&i.Role,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
+type CreateUserRow struct {
+	ID    int32
+	Email string
+	Role  string
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+	row := q.db.QueryRowContext(ctx, createUser, arg.Email, arg.Password, arg.Role)
+	var i CreateUserRow
+	err := row.Scan(&i.ID, &i.Email, &i.Role)
+	return i, err
+}
+
+const getAdmins = `-- name: GetAdmins :many
+SELECT id, email, role FROM users WHERE role = 'admin'
+`
+
+type GetAdminsRow struct {
+	ID    int32
+	Email string
+	Role  string
+}
+
+func (q *Queries) GetAdmins(ctx context.Context) ([]GetAdminsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAdmins)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAdminsRow
+	for rows.Next() {
+		var i GetAdminsRow
+		if err := rows.Scan(&i.ID, &i.Email, &i.Role); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, email, role FROM users WHERE email = $1
+`
+
+type GetUserByEmailRow struct {
+	ID    int32
+	Email string
+	Role  string
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i GetUserByEmailRow
+	err := row.Scan(&i.ID, &i.Email, &i.Role)
 	return i, err
 }

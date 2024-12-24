@@ -1,9 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
 SELECT 'up SQL query';
+
+CREATE SEQUENCE orders_id_seq START 1000 MINVALUE 1000;
 -- orders table
 CREATE TABLE orders (
-    id SERIAL PRIMARY KEY,
+    id INT PRIMARY KEY DEFAULT NEXTVAL('orders_id_seq'),
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     total NUMERIC(10, 2) NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('Pending', 'Completed', 'Cancelled')),

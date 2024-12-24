@@ -1,7 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
 SELECT 'up SQL query';
--- +goose StatementEnd
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
@@ -10,7 +9,7 @@ CREATE TABLE users (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
+-- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin

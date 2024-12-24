@@ -1,9 +1,12 @@
 -- +goose Up
 -- +goose StatementBegin
 SELECT 'up SQL query';
+
+CREATE SEQUENCE products_id_seq START 100 MINVALUE 100;
+
 -- products table
 CREATE TABLE products (
-    id SERIAL PRIMARY KEY,
+    id INT PRIMARY KEY DEFAULT NEXTVAL('products_id_seq'),
     name TEXT NOT NULL,
     description TEXT,
     price NUMERIC(10, 2) NOT NULL,
