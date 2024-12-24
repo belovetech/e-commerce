@@ -1,22 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"log"
 
+	"github.com/belovetech/e-commerce/config"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := gin.Default()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("cannot load config: ", err)
+	}
 
-	r.GET("/ping", func(c *gin.Context) {
+	router := gin.Default()
+
+	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
 
-	fmt.Println("Server is running on port:: ", os.Getenv("PORT"))
-
-	r.Run()
+	log.Printf("server is running at %s", cfg.ServerAddress)
+	if err := router.Run(cfg.ServerAddress); err != nil {
+		log.Fatal("cannot start server: ", err)
+	}
 }
