@@ -1,9 +1,9 @@
 version: '2'
 sql:
   - name: 'database'
-    schema: 'db/schema'
-    queries: 'db/queries'
+    schema: 'database/schema'
+    queries: 'database/queries'
     engine: 'postgresql'
     gen:
       go:
-        out: 'db/sqlc'
+        out: 'database/sqlc'

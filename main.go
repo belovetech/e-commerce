@@ -10,6 +10,7 @@ import (
 	"github.com/belovetech/e-commerce/config"
 	"github.com/belovetech/e-commerce/database/seeder"
 	"github.com/belovetech/e-commerce/database/sqlc"
+	"github.com/belovetech/e-commerce/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot load config: ", err)
 	}
+	utils.SetJWTSecretKey(cfg.JWTSecret)
 
 	// initialize database
 	db, err := sql.Open("postgres", cfg.DBSource)

@@ -5,6 +5,7 @@ import "github.com/spf13/viper"
 type Config struct {
 	DBSource      string `mapstructure:"DB_SOURCE"`
 	ServerAddress string `mapstructure:"SERVER_ADDRESS"`
+	JWTSecret     string `mapstructure:"JWT_SECRET"`
 }
 
 func LoadConfig() (Config, error) {

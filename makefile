@@ -1,4 +1,4 @@
-GOOSE_CMD=goose -dir db/schema
+GOOSE_CMD=goose -dir database/schema
 SQLC_CMD=sqlc
 DB_TYPE=postgres
 
