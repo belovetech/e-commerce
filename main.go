@@ -1,7 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"log"
+
+	_ "github.com/lib/pq"
 
 	"github.com/belovetech/e-commerce/api"
 	"github.com/belovetech/e-commerce/config"
@@ -14,11 +17,17 @@ func main() {
 		log.Fatal("cannot load config: ", err)
 	}
 
+	// initialize database
+	db, err := sql.Open("postgres", cfg.DBSource)
+	if err != nil {
+		log.Fatal("cannot connect to database: ", err)
+	}
+
 	//  initialize gin router
 	router := gin.Default()
 
 	// Setup routes
-	api.SetupRoutes(router)
+	api.SetupRoutes(router, db)
 
 	// Run server
 	log.Printf("server is running at %s", cfg.ServerAddress)
