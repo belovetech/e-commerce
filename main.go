@@ -8,6 +8,8 @@ import (
 
 	"github.com/belovetech/e-commerce/api"
 	"github.com/belovetech/e-commerce/config"
+	"github.com/belovetech/e-commerce/database/seeder"
+	"github.com/belovetech/e-commerce/database/sqlc"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,6 +30,9 @@ func main() {
 
 	// Setup routes
 	api.SetupRoutes(router, db)
+
+	// Seed admin user
+	seeder.SeedAdminUser(sqlc.New(db))
 
 	// Run server
 	log.Printf("server is running at %s", cfg.ServerAddress)
