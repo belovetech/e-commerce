@@ -67,3 +67,26 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 			Role:  user.Role,
 		}})
 }
+
+func (h *AuthHandler) Login(c *gin.Context) {
+
+	var req RegisterRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidRequest, "error": err.Error()})
+		return
+	}
+
+	token, err := h.service.LoginUser(c, req.Email, req.Password)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid email or password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Login successful",
+		"token":   token,
+	})
+
+}

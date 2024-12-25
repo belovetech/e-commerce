@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/belovetech/e-commerce/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,8 +18,36 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
-		if !ValidateToken(token) { // Assume you implement this
+		user, err := ValidateToken(token)
+		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			c.Abort()
+			return
+		}
+
+		c.Set("currentUser", user)
+		c.Next()
+	}
+}
+
+func AdminMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		currentUser, exists := c.Get("currentUser")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
+			c.Abort()
+			return
+		}
+
+		claims, ok := currentUser.(*utils.User)
+		if !ok {
+			c.JSON(http.StatusForbidden, gin.H{"message": "forbidden"})
+			c.Abort()
+			return
+		}
+
+		if claims.Role != "admin" {
+			c.JSON(http.StatusForbidden, gin.H{"message": "forbidden"})
 			c.Abort()
 			return
 		}
@@ -27,6 +56,16 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func ValidateToken(token string) bool {
-	return true
+func ValidateToken(token string) (*utils.User, error) {
+	claims, err := utils.VerifyJWT(token)
+	if err != nil {
+		return nil, err
+	}
+	user := &utils.User{
+		ID:    claims.ID,
+		Email: claims.Email,
+		Role:  claims.Role,
+	}
+
+	return user, err
 }

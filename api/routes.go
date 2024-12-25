@@ -5,6 +5,7 @@ import (
 
 	"github.com/belovetech/e-commerce/api/handlers"
 	"github.com/belovetech/e-commerce/database/sqlc"
+	"github.com/belovetech/e-commerce/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,11 +21,15 @@ func SetupRoutes(router *gin.Engine, dbConn *sql.DB) {
 	// auth route
 	authHandler := handlers.NewAuthHandler(queries)
 	public.POST("/register", authHandler.RegisterUser)
+	public.POST("/login", authHandler.Login)
 
 	// protected routes
 	userHandler := handlers.NewUserHandler(queries)
 	protected := router.Group("/api")
-	// protected.Use(AuthMiddleware())
+	protected.Use(middlewares.AuthMiddleware())
+
+	// admin routes
+	protected.Use(middlewares.AdminMiddleware())
 	protected.GET("/admins", userHandler.GetAdmins)
 
 }

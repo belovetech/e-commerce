@@ -3,7 +3,8 @@ package utils
 import (
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/belovetech/e-commerce/database/sqlc"
+	"github.com/golang-jwt/jwt"
 )
 
 var jwtSecretKey []byte
@@ -12,15 +13,24 @@ func SetJWTSecretKey(secretKey string) {
 	jwtSecretKey = []byte(secretKey)
 }
 
+type User struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
+}
+
 type Claims struct {
-	UserID int    `json:"user_id"`
-	Email  string `json:"email"`
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
 	jwt.StandardClaims
 }
 
-func GenerateJWT(userID int) (string, error) {
+func GenerateJWT(user sqlc.GetUserByEmailRow) (string, error) {
 	claims := Claims{
-		UserID: userID,
+		ID:    int(user.ID),
+		Email: user.Email,
+		Role:  user.Role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -31,7 +41,7 @@ func GenerateJWT(userID int) (string, error) {
 	return token.SignedString(jwtSecretKey)
 }
 
-func ParseJWT(tokenStr string) (*Claims, error) {
+func VerifyJWT(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtSecretKey, nil
 	})

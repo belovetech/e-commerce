@@ -47,16 +47,21 @@ func (s *AuthService) RegisterUser(ctx context.Context, email, password string) 
 	return &user, nil
 }
 
-func (s *AuthService) LoginUser(ctx context.Context, email, password string) (*sqlc.GetUserByEmailRow, error) {
+func (s *AuthService) LoginUser(ctx context.Context, email, password string) (string, error) {
 	user, err := s.queries.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	err = utils.CheckPasswordHash(password, user.Password)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &user, nil
+	token, err := utils.GenerateJWT(user)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
