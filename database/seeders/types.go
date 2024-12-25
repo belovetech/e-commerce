@@ -1,10 +1,13 @@
 package seeders
 
-import "github.com/belovetech/e-commerce/database/sqlc"
+import (
+	"github.com/belovetech/e-commerce/config"
+	"github.com/belovetech/e-commerce/database/sqlc"
+)
 
 type Seeder interface {
 	Name() string
-	Seed(queries *sqlc.Queries) error
+	Seed(queries *sqlc.Queries, cfg *config.Config) error
 }
 
 type ProductRequest struct {

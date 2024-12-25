@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/belovetech/e-commerce/config"
 	"github.com/belovetech/e-commerce/database/sqlc"
 )
 
@@ -29,7 +30,7 @@ func RunSeeders(queries *sqlc.Queries) error {
 		}
 
 		log.Printf("Running seeder '%s'...\n", seeder.Name())
-		if err := seeder.Seed(queries); err != nil {
+		if err := seeder.Seed(queries, &config.Config{}); err != nil {
 			return err
 		}
 

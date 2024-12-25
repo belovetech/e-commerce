@@ -4,26 +4,31 @@ import (
 	"context"
 	"log"
 
+	"github.com/belovetech/e-commerce/config"
 	"github.com/belovetech/e-commerce/database/sqlc"
 	"github.com/belovetech/e-commerce/utils"
 )
 
 type AdminSeeder struct{}
 
+const (
+	ErrNoFound = "sql: no rows in result set"
+)
+
 func (s AdminSeeder) Name() string {
 	return "AdminSeeder"
 }
 
-func (s AdminSeeder) Seed(queries *sqlc.Queries) error {
-	hashedPassword, err := utils.HashPassword("admin@123")
-	adminEmail := "admin@example.com"
+func (s AdminSeeder) Seed(queries *sqlc.Queries, cfg *config.Config) error {
+	hashedPassword, err := utils.HashPassword(cfg.AdminPassword)
+	adminEmail := cfg.AdminEmail
 	if err != nil {
 		log.Fatalf("Failed to hash password: %v", err)
 	}
 
 	adminExist, err := queries.GetUserByEmail(context.Background(), adminEmail)
-	if err != nil {
-		log.Fatalf("Failed to get admin user: %v", err)
+	if err.Error() != ErrNoFound {
+		log.Fatalf("Something went wrong: %v", err)
 	}
 
 	if adminExist.Email != "" {

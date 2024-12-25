@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/belovetech/e-commerce/config"
 	"github.com/belovetech/e-commerce/database/sqlc"
 )
 
@@ -50,7 +51,7 @@ func getProducts() []ProductRequest {
 func (s ProductSeeder) Name() string {
 	return "ProductSeeder"
 }
-func (s ProductSeeder) Seed(queries *sqlc.Queries) error {
+func (s ProductSeeder) Seed(queries *sqlc.Queries, cfg *config.Config) error {
 	products := getProducts()
 	for _, product := range products {
 		productData :=
