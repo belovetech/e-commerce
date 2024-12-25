@@ -30,7 +30,12 @@ func RunSeeders(queries *sqlc.Queries) error {
 		}
 
 		log.Printf("Running seeder '%s'...\n", seeder.Name())
-		if err := seeder.Seed(queries, &config.Config{}); err != nil {
+		cfg, err := config.LoadConfig()
+		if err != nil {
+			return fmt.Errorf("failed to load config: %w", err)
+		}
+
+		if err := seeder.Seed(queries, &cfg); err != nil {
 			return err
 		}
 

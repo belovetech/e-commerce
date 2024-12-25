@@ -30,10 +30,10 @@ func SetupRoutes(router *gin.Engine, dbConn *sql.DB) {
 
 	// products route
 	productHandler := handlers.NewProductHandler(queries)
-	protected.GET("/products", productHandler.GetProducts)
 
 	// admin routes
 	protected.Use(middlewares.AdminMiddleware())
 	protected.GET("/admins", userHandler.GetAdmins)
+	protected.GET("/products", productHandler.GetProducts)
 
 }
