@@ -38,6 +38,12 @@ type Product struct {
 	UpdatedAt   time.Time
 }
 
+type SeedingHistory struct {
+	ID         int32
+	SeederName string
+	ExecutedAt time.Time
+}
+
 type User struct {
 	ID        int32
 	Email     string

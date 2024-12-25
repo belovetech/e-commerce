@@ -1,4 +1,4 @@
-package seeder
+package seeders
 
 import (
 	"context"
@@ -8,7 +8,13 @@ import (
 	"github.com/belovetech/e-commerce/utils"
 )
 
-func SeedAdminUser(queries *sqlc.Queries) {
+type AdminSeeder struct{}
+
+func (s AdminSeeder) Name() string {
+	return "AdminSeeder"
+}
+
+func (s AdminSeeder) Seed(queries *sqlc.Queries) error {
 	hashedPassword, err := utils.HashPassword("admin@123")
 	adminEmail := "admin@example.com"
 	if err != nil {
@@ -22,7 +28,7 @@ func SeedAdminUser(queries *sqlc.Queries) {
 
 	if adminExist.Email != "" {
 		log.Println("Admin user already exists")
-		return
+		return nil
 	}
 
 	adminUser := sqlc.CreateUserParams{
@@ -31,10 +37,10 @@ func SeedAdminUser(queries *sqlc.Queries) {
 		Role:     "admin",
 	}
 
-	_, err = queries.CreateUser(context.Background(), adminUser)
-	if err != nil {
+	if _, err = queries.CreateUser(context.Background(), adminUser); err != nil {
 		log.Fatalf("Failed to create admin user: %v", err)
 	}
 
 	log.Println("Admin user created successfully")
+	return nil
 }
