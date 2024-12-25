@@ -45,40 +45,17 @@ func (q *Queries) CancelOrder(ctx context.Context, id int32) error {
 }
 
 const createOrder = `-- name: CreateOrder :one
-SELECT id, user_id, total, status FROM orders WHERE user_id = $1
-`
-
-type CreateOrderRow struct {
-	ID     int32
-	UserID int32
-	Total  string
-	Status string
-}
-
-func (q *Queries) CreateOrder(ctx context.Context, userID int32) (CreateOrderRow, error) {
-	row := q.db.QueryRowContext(ctx, createOrder, userID)
-	var i CreateOrderRow
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Total,
-		&i.Status,
-	)
-	return i, err
-}
-
-const getOrderById = `-- name: GetOrderById :one
 INSERT INTO orders (user_id, total, status)
 VALUES ($1, $2, 'Pending')
 RETURNING id, user_id, total, status, created_at
 `
 
-type GetOrderByIdParams struct {
+type CreateOrderParams struct {
 	UserID int32
 	Total  string
 }
 
-type GetOrderByIdRow struct {
+type CreateOrderRow struct {
 	ID        int32
 	UserID    int32
 	Total     string
@@ -86,15 +63,38 @@ type GetOrderByIdRow struct {
 	CreatedAt time.Time
 }
 
-func (q *Queries) GetOrderById(ctx context.Context, arg GetOrderByIdParams) (GetOrderByIdRow, error) {
-	row := q.db.QueryRowContext(ctx, getOrderById, arg.UserID, arg.Total)
-	var i GetOrderByIdRow
+func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (CreateOrderRow, error) {
+	row := q.db.QueryRowContext(ctx, createOrder, arg.UserID, arg.Total)
+	var i CreateOrderRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Total,
 		&i.Status,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getOrderById = `-- name: GetOrderById :one
+SELECT id, user_id, total, status FROM orders WHERE user_id = $1
+`
+
+type GetOrderByIdRow struct {
+	ID     int32
+	UserID int32
+	Total  string
+	Status string
+}
+
+func (q *Queries) GetOrderById(ctx context.Context, userID int32) (GetOrderByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getOrderById, userID)
+	var i GetOrderByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Total,
+		&i.Status,
 	)
 	return i, err
 }

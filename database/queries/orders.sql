@@ -1,7 +1,8 @@
--- name: CreateOrder :one
-SELECT id, user_id, total, status FROM orders WHERE user_id = $1;
 
 -- name: GetOrderById :one
+SELECT id, user_id, total, status FROM orders WHERE user_id = $1;
+
+-- name: CreateOrder :one
 INSERT INTO orders (user_id, total, status)
 VALUES ($1, $2, 'Pending')
 RETURNING id, user_id, total, status, created_at;

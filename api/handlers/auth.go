@@ -88,5 +88,4 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"message": "Login successful",
 		"token":   token,
 	})
-
 }

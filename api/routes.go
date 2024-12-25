@@ -28,6 +28,10 @@ func SetupRoutes(router *gin.Engine, dbConn *sql.DB) {
 	protected := router.Group("/api")
 	protected.Use(middlewares.AuthMiddleware())
 
+	// products route
+	productHandler := handlers.NewProductHandler(queries)
+	protected.GET("/products", productHandler.GetProducts)
+
 	// admin routes
 	protected.Use(middlewares.AdminMiddleware())
 	protected.GET("/admins", userHandler.GetAdmins)
