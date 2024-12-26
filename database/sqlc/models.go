@@ -36,6 +36,7 @@ type Product struct {
 	Stock       int32
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	IsAvailable sql.NullBool
 }
 
 type SeedingHistory struct {

@@ -62,7 +62,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int32) error {
 }
 
 const getProductById = `-- name: GetProductById :one
-SELECT id, name, description, price, stock FROM products WHERE id = $1
+SELECT id, name, description, price, stock, is_available FROM products WHERE id = $1
 `
 
 type GetProductByIdRow struct {
@@ -71,6 +71,7 @@ type GetProductByIdRow struct {
 	Description sql.NullString
 	Price       string
 	Stock       int32
+	IsAvailable sql.NullBool
 }
 
 func (q *Queries) GetProductById(ctx context.Context, id int32) (GetProductByIdRow, error) {
@@ -82,12 +83,13 @@ func (q *Queries) GetProductById(ctx context.Context, id int32) (GetProductByIdR
 		&i.Description,
 		&i.Price,
 		&i.Stock,
+		&i.IsAvailable,
 	)
 	return i, err
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, name, description, price, stock FROM products
+SELECT id, name, description, price, stock, is_available FROM products
 `
 
 type GetProductsRow struct {
@@ -96,6 +98,7 @@ type GetProductsRow struct {
 	Description sql.NullString
 	Price       string
 	Stock       int32
+	IsAvailable sql.NullBool
 }
 
 func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
@@ -113,6 +116,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
 			&i.Description,
 			&i.Price,
 			&i.Stock,
+			&i.IsAvailable,
 		); err != nil {
 			return nil, err
 		}
@@ -155,16 +159,17 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 
 const updateProductStock = `-- name: UpdateProductStock :exec
 UPDATE products
-SET stock = $1, updated_at = NOW()
-WHERE id = $2
+SET stock = $1, is_available = $2, updated_at = NOW()
+WHERE id = $3
 `
 
 type UpdateProductStockParams struct {
-	Stock int32
-	ID    int32
+	Stock       int32
+	IsAvailable sql.NullBool
+	ID          int32
 }
 
 func (q *Queries) UpdateProductStock(ctx context.Context, arg UpdateProductStockParams) error {
-	_, err := q.db.ExecContext(ctx, updateProductStock, arg.Stock, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateProductStock, arg.Stock, arg.IsAvailable, arg.ID)
 	return err
 }

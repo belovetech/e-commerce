@@ -1,8 +1,8 @@
 -- name: GetProducts :many
-SELECT id, name, description, price, stock FROM products;
+SELECT id, name, description, price, stock, is_available FROM products;
 
 -- name: GetProductById :one
-SELECT id, name, description, price, stock FROM products WHERE id = $1;
+SELECT id, name, description, price, stock, is_available FROM products WHERE id = $1;
 
 -- name: CreateProduct :one
 INSERT INTO products (name, description, price, stock)
@@ -17,8 +17,8 @@ RETURNING id, name, description, price, stock, updated_at;
 
 -- name: UpdateProductStock :exec
 UPDATE products
-SET stock = $1, updated_at = NOW()
-WHERE id = $2;
+SET stock = $1, is_available = $2, updated_at = NOW()
+WHERE id = $3;
 
 -- name: DeleteProduct :exec
 DELETE FROM products WHERE id = $1;

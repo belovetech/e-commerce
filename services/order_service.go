@@ -55,7 +55,7 @@ func (s *OrderService) CreateOrder(ctx *gin.Context, userId int32, params []Orde
 			return sqlc.CreateOrderRow{}, err
 		}
 
-		if product.Stock < int32(param.Quantity) {
+		if !product.IsAvailable.Valid || !product.IsAvailable.Bool {
 			return sqlc.CreateOrderRow{}, fmt.Errorf("product with id %d is out of stock", param.ProductID)
 		}
 
@@ -70,9 +70,14 @@ func (s *OrderService) CreateOrder(ctx *gin.Context, userId int32, params []Orde
 			return sqlc.CreateOrderRow{}, err
 		}
 
+		productAvailble := product.IsAvailable.Bool
+		if product.Stock == 0 {
+			productAvailble = false
+		}
 		qtx.UpdateProductStock(ctx, sqlc.UpdateProductStockParams{
-			ID:    product.ID,
-			Stock: product.Stock - int32(param.Quantity),
+			ID:          product.ID,
+			Stock:       product.Stock - int32(param.Quantity),
+			IsAvailable: sql.NullBool{Bool: productAvailble, Valid: true},
 		})
 
 	}
