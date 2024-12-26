@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/belovetech/e-commerce/database/sqlc"
+	"github.com/belovetech/e-commerce/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -103,7 +104,7 @@ func (s *OrderService) CancelOrder(ctx *gin.Context, orderId int32) (sqlc.Cancel
 
 	defer tx.Rollback()
 	qtx := s.queries.WithTx(tx)
-
+	fmt.Println("order id", orderId)
 	order, err := qtx.GetOrderById(ctx, orderId)
 	if err == sql.ErrNoRows {
 		return sqlc.CancelOrderRow{}, fmt.Errorf("order with id %d not found", orderId)
@@ -111,8 +112,12 @@ func (s *OrderService) CancelOrder(ctx *gin.Context, orderId int32) (sqlc.Cancel
 		return sqlc.CancelOrderRow{}, err
 	}
 
+	if order.Status == "Cancelled" {
+		return sqlc.CancelOrderRow{}, utils.ErrOrderAlreadyCancelled
+	}
+
 	if order.Status != "Pending" {
-		return sqlc.CancelOrderRow{}, fmt.Errorf("order with id %d cannot be cancelled", orderId)
+		return sqlc.CancelOrderRow{}, utils.ErrOrderNotPending
 	}
 
 	cancelledOrder, err := qtx.CancelOrder(ctx, orderId)
@@ -155,14 +160,14 @@ func (s *OrderService) UpdateOrderStatus(ctx *gin.Context, orderId int32, status
 		return err
 	}
 
+	status = utils.NormalizeStatus(status)
+
 	defer tx.Rollback()
 	qtx := s.queries.WithTx(tx)
 
 	order, err := qtx.GetOrderById(ctx, orderId)
 	if err == sql.ErrNoRows {
 		return fmt.Errorf("order with id %d not found", orderId)
-	} else if err != nil {
-		return err
 	}
 
 	if order.Status == status {

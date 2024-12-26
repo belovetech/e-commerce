@@ -28,11 +28,19 @@ func SetupRoutes(router *gin.Engine, dbConn *sql.DB) {
 	// protected routes
 	protected := router.Group("/api")
 	protected.Use(middlewares.AuthMiddleware())
+
+	// order routes
 	protected.POST("/orders", orderHandler.CreateOrder)
+	protected.GET("/orders", orderHandler.GetUserOrders)
+	protected.DELETE("/orders/:id/cancel", orderHandler.CancelOrder)
+
+	// product routes
 	protected.GET("/products", productHandler.GetProducts)
 
 	// admin routes
-	protected.Use(middlewares.AdminMiddleware())
-	protected.GET("/admins", userHandler.GetAdmins)
+	admin := protected.Group("/admins")
+	admin.Use(middlewares.AdminMiddleware())
+	admin.GET("/", userHandler.GetAdmins)
+	admin.POST("/update-order-status", orderHandler.UpdateOrderStatus)
 
 }

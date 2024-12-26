@@ -9,7 +9,7 @@ INSERT INTO products (name, description, price, stock)
 VALUES ($1, $2, $3, $4)
 RETURNING id, name, description, price, stock, created_at;
 
--- name: UpdateProduct :exec
+-- name: UpdateProduct :one
 UPDATE products
 SET name = $1, description = $2, price = $3, stock = $4, updated_at = NOW()
 WHERE id = $5

@@ -10,46 +10,46 @@ import (
 )
 
 type Order struct {
-	ID        int32
-	UserID    int32
-	Total     string
-	Status    string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int32     `json:"id"`
+	UserID    int32     `json:"user_id"`
+	Total     string    `json:"total"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type OrderItem struct {
-	ID        int32
-	OrderID   int32
-	ProductID int32
-	Quantity  int32
-	Price     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int32     `json:"id"`
+	OrderID   int32     `json:"order_id"`
+	ProductID int32     `json:"product_id"`
+	Quantity  int32     `json:"quantity"`
+	Price     string    `json:"price"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Product struct {
-	ID          int32
-	Name        string
-	Description sql.NullString
-	Price       string
-	Stock       int32
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	IsAvailable sql.NullBool
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Price       string         `json:"price"`
+	Stock       int32          `json:"stock"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	IsAvailable sql.NullBool   `json:"is_available"`
 }
 
 type SeedingHistory struct {
-	ID         int32
-	SeederName string
-	ExecutedAt time.Time
+	ID         int32     `json:"id"`
+	SeederName string    `json:"seeder_name"`
+	ExecutedAt time.Time `json:"executed_at"`
 }
 
 type User struct {
-	ID        int32
-	Email     string
-	Password  string
-	Role      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int32     `json:"id"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -33,6 +34,7 @@ func AuthMiddleware() gin.HandlerFunc {
 func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		currentUser, exists := c.Get("currentUser")
+		log.Printf("Current user: %v", currentUser)
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 			c.Abort()

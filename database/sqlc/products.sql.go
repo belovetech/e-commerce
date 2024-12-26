@@ -18,19 +18,19 @@ RETURNING id, name, description, price, stock, created_at
 `
 
 type CreateProductParams struct {
-	Name        string
-	Description sql.NullString
-	Price       string
-	Stock       int32
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Price       string         `json:"price"`
+	Stock       int32          `json:"stock"`
 }
 
 type CreateProductRow struct {
-	ID          int32
-	Name        string
-	Description sql.NullString
-	Price       string
-	Stock       int32
-	CreatedAt   time.Time
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Price       string         `json:"price"`
+	Stock       int32          `json:"stock"`
+	CreatedAt   time.Time      `json:"created_at"`
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (CreateProductRow, error) {
@@ -66,12 +66,12 @@ SELECT id, name, description, price, stock, is_available FROM products WHERE id 
 `
 
 type GetProductByIdRow struct {
-	ID          int32
-	Name        string
-	Description sql.NullString
-	Price       string
-	Stock       int32
-	IsAvailable sql.NullBool
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Price       string         `json:"price"`
+	Stock       int32          `json:"stock"`
+	IsAvailable sql.NullBool   `json:"is_available"`
 }
 
 func (q *Queries) GetProductById(ctx context.Context, id int32) (GetProductByIdRow, error) {
@@ -93,12 +93,12 @@ SELECT id, name, description, price, stock, is_available FROM products
 `
 
 type GetProductsRow struct {
-	ID          int32
-	Name        string
-	Description sql.NullString
-	Price       string
-	Stock       int32
-	IsAvailable sql.NullBool
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Price       string         `json:"price"`
+	Stock       int32          `json:"stock"`
+	IsAvailable sql.NullBool   `json:"is_available"`
 }
 
 func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
@@ -107,7 +107,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetProductsRow
+	items := []GetProductsRow{}
 	for rows.Next() {
 		var i GetProductsRow
 		if err := rows.Scan(
@@ -131,7 +131,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
 	return items, nil
 }
 
-const updateProduct = `-- name: UpdateProduct :exec
+const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
 SET name = $1, description = $2, price = $3, stock = $4, updated_at = NOW()
 WHERE id = $5
@@ -139,22 +139,40 @@ RETURNING id, name, description, price, stock, updated_at
 `
 
 type UpdateProductParams struct {
-	Name        string
-	Description sql.NullString
-	Price       string
-	Stock       int32
-	ID          int32
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Price       string         `json:"price"`
+	Stock       int32          `json:"stock"`
+	ID          int32          `json:"id"`
 }
 
-func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
-	_, err := q.db.ExecContext(ctx, updateProduct,
+type UpdateProductRow struct {
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Price       string         `json:"price"`
+	Stock       int32          `json:"stock"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (UpdateProductRow, error) {
+	row := q.db.QueryRowContext(ctx, updateProduct,
 		arg.Name,
 		arg.Description,
 		arg.Price,
 		arg.Stock,
 		arg.ID,
 	)
-	return err
+	var i UpdateProductRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Price,
+		&i.Stock,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateProductStock = `-- name: UpdateProductStock :exec
@@ -164,9 +182,9 @@ WHERE id = $3
 `
 
 type UpdateProductStockParams struct {
-	Stock       int32
-	IsAvailable sql.NullBool
-	ID          int32
+	Stock       int32        `json:"stock"`
+	IsAvailable sql.NullBool `json:"is_available"`
+	ID          int32        `json:"id"`
 }
 
 func (q *Queries) UpdateProductStock(ctx context.Context, arg UpdateProductStockParams) error {

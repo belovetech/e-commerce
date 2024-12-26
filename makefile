@@ -3,7 +3,7 @@ SQLC_CMD=sqlc
 DB_TYPE=postgres
 
 
-.PHONY: db-migrate, db-rollback, create-migration, db-generate, test
+.PHONY: db-migrate, db-rollback, create-migration, db-generate, test, server
 
 db-migrate:
 	@echo "Migrating database..."
@@ -29,3 +29,7 @@ db-generate:
 
 test:
 	@go test -v ./...
+
+
+server:
+	air

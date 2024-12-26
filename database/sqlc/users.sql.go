@@ -16,15 +16,15 @@ RETURNING id, email, role
 `
 
 type CreateUserParams struct {
-	Email    string
-	Password string
-	Role     string
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 type CreateUserRow struct {
-	ID    int32
-	Email string
-	Role  string
+	ID    int32  `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
@@ -39,9 +39,9 @@ SELECT id, email, role FROM users WHERE role = 'admin'
 `
 
 type GetAdminsRow struct {
-	ID    int32
-	Email string
-	Role  string
+	ID    int32  `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
 }
 
 func (q *Queries) GetAdmins(ctx context.Context) ([]GetAdminsRow, error) {
@@ -50,7 +50,7 @@ func (q *Queries) GetAdmins(ctx context.Context) ([]GetAdminsRow, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAdminsRow
+	items := []GetAdminsRow{}
 	for rows.Next() {
 		var i GetAdminsRow
 		if err := rows.Scan(&i.ID, &i.Email, &i.Role); err != nil {
@@ -72,10 +72,10 @@ SELECT id, email, password,  role FROM users WHERE email = $1
 `
 
 type GetUserByEmailRow struct {
-	ID       int32
-	Email    string
-	Password string
-	Role     string
+	ID       int32  `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {

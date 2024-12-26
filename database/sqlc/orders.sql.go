@@ -16,10 +16,10 @@ VALUES ($1, $2, $3, $4)
 `
 
 type AddOrderItemParams struct {
-	OrderID   int32
-	ProductID int32
-	Quantity  int32
-	Price     string
+	OrderID   int32  `json:"order_id"`
+	ProductID int32  `json:"product_id"`
+	Quantity  int32  `json:"quantity"`
+	Price     string `json:"price"`
 }
 
 func (q *Queries) AddOrderItem(ctx context.Context, arg AddOrderItemParams) error {
@@ -40,11 +40,11 @@ RETURNING id, user_id, total, status, updated_at
 `
 
 type CancelOrderRow struct {
-	ID        int32
-	UserID    int32
-	Total     string
-	Status    string
-	UpdatedAt time.Time
+	ID        int32     `json:"id"`
+	UserID    int32     `json:"user_id"`
+	Total     string    `json:"total"`
+	Status    string    `json:"status"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CancelOrder(ctx context.Context, id int32) (CancelOrderRow, error) {
@@ -67,16 +67,16 @@ RETURNING id, user_id, total, status, created_at
 `
 
 type CreateOrderParams struct {
-	UserID int32
-	Total  string
+	UserID int32  `json:"user_id"`
+	Total  string `json:"total"`
 }
 
 type CreateOrderRow struct {
-	ID        int32
-	UserID    int32
-	Total     string
-	Status    string
-	CreatedAt time.Time
+	ID        int32     `json:"id"`
+	UserID    int32     `json:"user_id"`
+	Total     string    `json:"total"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (CreateOrderRow, error) {
@@ -93,18 +93,18 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Creat
 }
 
 const getOrderById = `-- name: GetOrderById :one
-SELECT id, user_id, total, status FROM orders WHERE user_id = $1
+SELECT id, user_id, total, status FROM orders WHERE id = $1
 `
 
 type GetOrderByIdRow struct {
-	ID     int32
-	UserID int32
-	Total  string
-	Status string
+	ID     int32  `json:"id"`
+	UserID int32  `json:"user_id"`
+	Total  string `json:"total"`
+	Status string `json:"status"`
 }
 
-func (q *Queries) GetOrderById(ctx context.Context, userID int32) (GetOrderByIdRow, error) {
-	row := q.db.QueryRowContext(ctx, getOrderById, userID)
+func (q *Queries) GetOrderById(ctx context.Context, id int32) (GetOrderByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getOrderById, id)
 	var i GetOrderByIdRow
 	err := row.Scan(
 		&i.ID,
@@ -120,9 +120,9 @@ SELECT product_id, quantity, price FROM order_items WHERE order_id = $1
 `
 
 type GetOrderItemsRow struct {
-	ProductID int32
-	Quantity  int32
-	Price     string
+	ProductID int32  `json:"product_id"`
+	Quantity  int32  `json:"quantity"`
+	Price     string `json:"price"`
 }
 
 func (q *Queries) GetOrderItems(ctx context.Context, orderID int32) ([]GetOrderItemsRow, error) {
@@ -131,7 +131,7 @@ func (q *Queries) GetOrderItems(ctx context.Context, orderID int32) ([]GetOrderI
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetOrderItemsRow
+	items := []GetOrderItemsRow{}
 	for rows.Next() {
 		var i GetOrderItemsRow
 		if err := rows.Scan(&i.ProductID, &i.Quantity, &i.Price); err != nil {
@@ -158,7 +158,7 @@ func (q *Queries) GetOrdersByUserId(ctx context.Context, userID int32) ([]Order,
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Order
+	items := []Order{}
 	for rows.Next() {
 		var i Order
 		if err := rows.Scan(
@@ -189,8 +189,8 @@ WHERE id = $2
 `
 
 type UpdateOrderStatusParams struct {
-	Status string
-	ID     int32
+	Status string `json:"status"`
+	ID     int32  `json:"id"`
 }
 
 func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) error {
@@ -210,10 +210,10 @@ RETURNING id, total, status, updated_at
 `
 
 type UpdateOrderTotalRow struct {
-	ID        int32
-	Total     string
-	Status    string
-	UpdatedAt time.Time
+	ID        int32     `json:"id"`
+	Total     string    `json:"total"`
+	Status    string    `json:"status"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (q *Queries) UpdateOrderTotal(ctx context.Context, orderID int32) (UpdateOrderTotalRow, error) {

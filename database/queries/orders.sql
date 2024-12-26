@@ -1,6 +1,6 @@
 
 -- name: GetOrderById :one
-SELECT id, user_id, total, status FROM orders WHERE user_id = $1;
+SELECT id, user_id, total, status FROM orders WHERE id = $1;
 
 -- name: GetOrdersByUserId :many
 SELECT id, user_id, total, status, created_at, updated_at FROM orders WHERE user_id = $1;

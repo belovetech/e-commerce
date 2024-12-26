@@ -50,3 +50,24 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 		"products": response,
 	})
 }
+
+func (h *ProductHandler) CreateProduct(c *gin.Context) {
+	var params sqlc.CreateProductParams
+
+	if err := c.ShouldBindJSON(&params); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": ErrInvalidRequest, "error": err.Error()})
+		return
+	}
+
+	product, err := h.service.CreateProduct(c, params)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": ErrServer})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Product created successfully",
+		"product": product,
+	})
+}
