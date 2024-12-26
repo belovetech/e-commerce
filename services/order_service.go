@@ -94,3 +94,116 @@ func (s *OrderService) CreateOrder(ctx *gin.Context, userId int32, params []Orde
 		Status: order.Status,
 	}, tx.Commit()
 }
+
+func (s *OrderService) CancelOrder(ctx *gin.Context, orderId int32) (sqlc.CancelOrderRow, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return sqlc.CancelOrderRow{}, err
+	}
+
+	defer tx.Rollback()
+	qtx := s.queries.WithTx(tx)
+
+	order, err := qtx.GetOrderById(ctx, orderId)
+	if err == sql.ErrNoRows {
+		return sqlc.CancelOrderRow{}, fmt.Errorf("order with id %d not found", orderId)
+	} else if err != nil {
+		return sqlc.CancelOrderRow{}, err
+	}
+
+	if order.Status != "Pending" {
+		return sqlc.CancelOrderRow{}, fmt.Errorf("order with id %d cannot be cancelled", orderId)
+	}
+
+	cancelledOrder, err := qtx.CancelOrder(ctx, orderId)
+	if err != nil {
+		return sqlc.CancelOrderRow{}, err
+	}
+
+	orderItems, err := qtx.GetOrderItems(ctx, orderId)
+	if err == sql.ErrNoRows {
+		return sqlc.CancelOrderRow{}, fmt.Errorf("order items for order with id %d not found", orderId)
+	} else if err != nil {
+		return sqlc.CancelOrderRow{}, err
+	}
+
+	for _, item := range orderItems {
+		product, err := qtx.GetProductById(ctx, item.ProductID)
+		if err == sql.ErrNoRows {
+			return sqlc.CancelOrderRow{}, fmt.Errorf("product with id %d not found", item.ProductID)
+		} else if err != nil {
+			return sqlc.CancelOrderRow{}, err
+		}
+
+		qtx.UpdateProductStock(ctx, sqlc.UpdateProductStockParams{
+			ID:          product.ID,
+			Stock:       product.Stock + item.Quantity,
+			IsAvailable: sql.NullBool{Bool: true, Valid: true},
+		})
+	}
+
+	return cancelledOrder, tx.Commit()
+}
+
+func (s *OrderService) GetUserOrders(ctx *gin.Context, userId int32) ([]sqlc.Order, error) {
+	return s.queries.GetOrdersByUserId(ctx, userId)
+}
+
+func (s *OrderService) UpdateOrderStatus(ctx *gin.Context, orderId int32, status string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+	qtx := s.queries.WithTx(tx)
+
+	order, err := qtx.GetOrderById(ctx, orderId)
+	if err == sql.ErrNoRows {
+		return fmt.Errorf("order with id %d not found", orderId)
+	} else if err != nil {
+		return err
+	}
+
+	if order.Status == status {
+		return fmt.Errorf("order with id %d already has status %s", orderId, status)
+	}
+
+	if status != "Cancelled" && status != "Completed" {
+		return fmt.Errorf("invalid status %s", status)
+	}
+
+	err = qtx.UpdateOrderStatus(ctx, sqlc.UpdateOrderStatusParams{
+		ID:     orderId,
+		Status: status,
+	})
+	if err != nil {
+		return err
+	}
+
+	if status == "Cancelled" {
+		orderItems, err := qtx.GetOrderItems(ctx, orderId)
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("order items for order with id %d not found", orderId)
+		} else if err != nil {
+			return err
+		}
+
+		for _, item := range orderItems {
+			product, err := qtx.GetProductById(ctx, item.ProductID)
+			if err == sql.ErrNoRows {
+				return fmt.Errorf("product with id %d not found", item.ProductID)
+			} else if err != nil {
+				return err
+			}
+
+			qtx.UpdateProductStock(ctx, sqlc.UpdateProductStockParams{
+				ID:          product.ID,
+				Stock:       product.Stock + item.Quantity,
+				IsAvailable: sql.NullBool{Bool: true, Valid: true},
+			})
+		}
+	}
+
+	return tx.Commit()
+}

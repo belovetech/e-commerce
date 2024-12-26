@@ -2,6 +2,9 @@
 -- name: GetOrderById :one
 SELECT id, user_id, total, status FROM orders WHERE user_id = $1;
 
+-- name: GetOrdersByUserId :many
+SELECT id, user_id, total, status, created_at, updated_at FROM orders WHERE user_id = $1;
+
 -- name: CreateOrder :one
 INSERT INTO orders (user_id, total, status)
 VALUES ($1, $2, 'Pending')
@@ -11,12 +14,14 @@ RETURNING id, user_id, total, status, created_at;
 INSERT INTO order_items (order_id, product_id, quantity, price)
 VALUES ($1, $2, $3, $4);
 
+-- name: GetOrderItems :many
+SELECT product_id, quantity, price FROM order_items WHERE order_id = $1;
+
 -- name: CancelOrder :one
 UPDATE orders
 SET status = 'Cancelled', updated_at = NOW()
 WHERE id = $1 AND status = 'Pending'
 RETURNING id, user_id, total, status, updated_at;
-
 
 -- name: UpdateOrderStatus :exec
 UPDATE orders

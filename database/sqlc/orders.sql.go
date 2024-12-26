@@ -115,6 +115,73 @@ func (q *Queries) GetOrderById(ctx context.Context, userID int32) (GetOrderByIdR
 	return i, err
 }
 
+const getOrderItems = `-- name: GetOrderItems :many
+SELECT product_id, quantity, price FROM order_items WHERE order_id = $1
+`
+
+type GetOrderItemsRow struct {
+	ProductID int32
+	Quantity  int32
+	Price     string
+}
+
+func (q *Queries) GetOrderItems(ctx context.Context, orderID int32) ([]GetOrderItemsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getOrderItems, orderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOrderItemsRow
+	for rows.Next() {
+		var i GetOrderItemsRow
+		if err := rows.Scan(&i.ProductID, &i.Quantity, &i.Price); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrdersByUserId = `-- name: GetOrdersByUserId :many
+SELECT id, user_id, total, status, created_at, updated_at FROM orders WHERE user_id = $1
+`
+
+func (q *Queries) GetOrdersByUserId(ctx context.Context, userID int32) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, getOrdersByUserId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Total,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateOrderStatus = `-- name: UpdateOrderStatus :exec
 UPDATE orders
 SET status = $1, updated_at = NOW()
