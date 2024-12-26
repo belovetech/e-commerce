@@ -15,5 +15,10 @@ SET name = $1, description = $2, price = $3, stock = $4, updated_at = NOW()
 WHERE id = $5
 RETURNING id, name, description, price, stock, updated_at;
 
+-- name: UpdateProductStock :exec
+UPDATE products
+SET stock = $1, updated_at = NOW()
+WHERE id = $2;
+
 -- name: DeleteProduct :exec
 DELETE FROM products WHERE id = $1;

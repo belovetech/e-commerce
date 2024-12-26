@@ -152,3 +152,19 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 	)
 	return err
 }
+
+const updateProductStock = `-- name: UpdateProductStock :exec
+UPDATE products
+SET stock = $1, updated_at = NOW()
+WHERE id = $2
+`
+
+type UpdateProductStockParams struct {
+	Stock int32
+	ID    int32
+}
+
+func (q *Queries) UpdateProductStock(ctx context.Context, arg UpdateProductStockParams) error {
+	_, err := q.db.ExecContext(ctx, updateProductStock, arg.Stock, arg.ID)
+	return err
+}

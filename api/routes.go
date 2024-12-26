@@ -11,29 +11,28 @@ import (
 
 func SetupRoutes(router *gin.Engine, dbConn *sql.DB) {
 	queries := sqlc.New(dbConn)
-
 	public := router.Group("/api")
 
-	// Ping route
+	// handlers
 	pingHandler := handlers.NewPingHandler()
-	public.GET("/ping", pingHandler.Ping)
-
-	// auth route
 	authHandler := handlers.NewAuthHandler(queries)
+	userHandler := handlers.NewUserHandler(queries)
+	productHandler := handlers.NewProductHandler(queries)
+	orderHandler := handlers.NewOrderHandler(dbConn, queries)
+
+	// public routes
+	public.GET("/ping", pingHandler.Ping)
 	public.POST("/register", authHandler.RegisterUser)
 	public.POST("/login", authHandler.Login)
 
 	// protected routes
-	userHandler := handlers.NewUserHandler(queries)
 	protected := router.Group("/api")
 	protected.Use(middlewares.AuthMiddleware())
-
-	// products route
-	productHandler := handlers.NewProductHandler(queries)
+	protected.POST("/orders", orderHandler.CreateOrder)
+	protected.GET("/products", productHandler.GetProducts)
 
 	// admin routes
 	protected.Use(middlewares.AdminMiddleware())
 	protected.GET("/admins", userHandler.GetAdmins)
-	protected.GET("/products", productHandler.GetProducts)
 
 }

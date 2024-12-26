@@ -32,16 +32,32 @@ func (q *Queries) AddOrderItem(ctx context.Context, arg AddOrderItemParams) erro
 	return err
 }
 
-const cancelOrder = `-- name: CancelOrder :exec
+const cancelOrder = `-- name: CancelOrder :one
 UPDATE orders
 SET status = 'Cancelled', updated_at = NOW()
 WHERE id = $1 AND status = 'Pending'
 RETURNING id, user_id, total, status, updated_at
 `
 
-func (q *Queries) CancelOrder(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, cancelOrder, id)
-	return err
+type CancelOrderRow struct {
+	ID        int32
+	UserID    int32
+	Total     string
+	Status    string
+	UpdatedAt time.Time
+}
+
+func (q *Queries) CancelOrder(ctx context.Context, id int32) (CancelOrderRow, error) {
+	row := q.db.QueryRowContext(ctx, cancelOrder, id)
+	var i CancelOrderRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Total,
+		&i.Status,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const createOrder = `-- name: CreateOrder :one
@@ -115,7 +131,7 @@ func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusPa
 	return err
 }
 
-const updateOrderTotal = `-- name: UpdateOrderTotal :exec
+const updateOrderTotal = `-- name: UpdateOrderTotal :one
 UPDATE orders
 SET total = (
     SELECT SUM(price * quantity)
@@ -126,7 +142,21 @@ WHERE id = $1
 RETURNING id, total, status, updated_at
 `
 
-func (q *Queries) UpdateOrderTotal(ctx context.Context, orderID int32) error {
-	_, err := q.db.ExecContext(ctx, updateOrderTotal, orderID)
-	return err
+type UpdateOrderTotalRow struct {
+	ID        int32
+	Total     string
+	Status    string
+	UpdatedAt time.Time
+}
+
+func (q *Queries) UpdateOrderTotal(ctx context.Context, orderID int32) (UpdateOrderTotalRow, error) {
+	row := q.db.QueryRowContext(ctx, updateOrderTotal, orderID)
+	var i UpdateOrderTotalRow
+	err := row.Scan(
+		&i.ID,
+		&i.Total,
+		&i.Status,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

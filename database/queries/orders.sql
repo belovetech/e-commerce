@@ -11,7 +11,7 @@ RETURNING id, user_id, total, status, created_at;
 INSERT INTO order_items (order_id, product_id, quantity, price)
 VALUES ($1, $2, $3, $4);
 
--- name: CancelOrder :exec
+-- name: CancelOrder :one
 UPDATE orders
 SET status = 'Cancelled', updated_at = NOW()
 WHERE id = $1 AND status = 'Pending'
@@ -24,7 +24,7 @@ SET status = $1, updated_at = NOW()
 WHERE id = $2;
 
 
--- name: UpdateOrderTotal :exec
+-- name: UpdateOrderTotal :one
 UPDATE orders
 SET total = (
     SELECT SUM(price * quantity)
