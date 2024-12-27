@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
@@ -19,7 +18,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
-		user, err := ValidateToken(token)
+		user, err := validateToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			c.Abort()
@@ -31,34 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func AdminMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		currentUser, exists := c.Get("currentUser")
-		log.Printf("Current user: %v", currentUser)
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
-			c.Abort()
-			return
-		}
-
-		claims, ok := currentUser.(*utils.User)
-		if !ok {
-			c.JSON(http.StatusForbidden, gin.H{"message": "forbidden"})
-			c.Abort()
-			return
-		}
-
-		if claims.Role != "admin" {
-			c.JSON(http.StatusForbidden, gin.H{"message": "forbidden"})
-			c.Abort()
-			return
-		}
-
-		c.Next()
-	}
-}
-
-func ValidateToken(token string) (*utils.User, error) {
+func validateToken(token string) (*utils.User, error) {
 	claims, err := utils.VerifyJWT(token)
 	if err != nil {
 		return nil, err

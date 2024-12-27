@@ -14,7 +14,7 @@ import (
 const createProduct = `-- name: CreateProduct :one
 INSERT INTO products (name, description, price, stock, created_by)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, name, description, price, stock, created_at, created_by
+RETURNING id, name, description, price, stock, created_at, updated_at, created_by
 `
 
 type CreateProductParams struct {
@@ -32,6 +32,7 @@ type CreateProductRow struct {
 	Price       string         `json:"price"`
 	Stock       int32          `json:"stock"`
 	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
 	CreatedBy   int32          `json:"created_by"`
 }
 
@@ -51,6 +52,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (C
 		&i.Price,
 		&i.Stock,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.CreatedBy,
 	)
 	return i, err
@@ -93,7 +95,7 @@ func (q *Queries) GetProductById(ctx context.Context, id int32) (GetProductByIdR
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, name, description, price, stock, is_available FROM products
+SELECT id, name, description, price, stock, is_available FROM products ORDER BY created_at DESC
 `
 
 type GetProductsRow struct {

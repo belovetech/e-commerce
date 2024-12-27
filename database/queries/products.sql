@@ -1,5 +1,5 @@
 -- name: GetProducts :many
-SELECT id, name, description, price, stock, is_available FROM products;
+SELECT id, name, description, price, stock, is_available FROM products ORDER BY created_at DESC;
 
 -- name: GetProductById :one
 SELECT id, name, description, price, stock, is_available FROM products WHERE id = $1;

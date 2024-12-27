@@ -10,6 +10,7 @@ import (
 	"github.com/belovetech/e-commerce/config"
 	"github.com/belovetech/e-commerce/database/seeders"
 	"github.com/belovetech/e-commerce/database/sqlc"
+	"github.com/belovetech/e-commerce/middlewares"
 	"github.com/belovetech/e-commerce/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -29,6 +30,7 @@ func main() {
 
 	//  initialize gin router
 	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
 
 	// Setup routes
 	api.SetupRoutes(router, db)

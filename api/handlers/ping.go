@@ -1,6 +1,8 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type PingHandler struct{}
 
@@ -10,6 +12,6 @@ func NewPingHandler() *PingHandler {
 
 func (h *PingHandler) Ping(c *gin.Context) {
 	c.JSON(200, gin.H{
-		"message": "pong",
+		"message": "pong!!!",
 	})
 }
