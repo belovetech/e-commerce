@@ -61,7 +61,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": SuccessUserCreated,
-		"user": RegisterResponse{
+		"data": RegisterResponse{
 			ID:    int64(user.ID),
 			Email: user.Email,
 			Role:  user.Role,
@@ -86,6 +86,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",
-		"token":   token,
+		"data": map[string]interface{}{
+			"token": token,
+		},
 	})
 }

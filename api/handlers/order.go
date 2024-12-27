@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/belovetech/e-commerce/database/sqlc"
 	"github.com/belovetech/e-commerce/services"
@@ -68,7 +67,7 @@ type CancelOrderRequest struct {
 }
 
 func (h *OrderHandler) CancelOrder(c *gin.Context) {
-	orderId, err := getOrderIdFromParam(c)
+	orderId, err := utils.GetIdFromParam(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -118,19 +117,4 @@ func (h *OrderHandler) UpdateOrderStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Order status updated successfully"})
-}
-
-func getOrderIdFromParam(c *gin.Context) (int32, error) {
-	orderIdStr := c.Param("id")
-
-	if orderIdStr == "" {
-		return 0, utils.ErrInvalidRequest
-	}
-
-	orderId, err := strconv.Atoi(orderIdStr)
-	if err != nil {
-		return 0, utils.ErrInvalidRequest
-	}
-
-	return int32(orderId), nil
 }

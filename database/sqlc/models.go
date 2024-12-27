@@ -37,6 +37,7 @@ type Product struct {
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	IsAvailable sql.NullBool   `json:"is_available"`
+	CreatedBy   int32          `json:"created_by"`
 }
 
 type SeedingHistory struct {

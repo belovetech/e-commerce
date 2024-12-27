@@ -85,5 +85,8 @@ func setupAdminRoutes(router *gin.Engine, handlers *Handler) {
 		admin.Use(middlewares.AdminMiddleware())
 		admin.GET("", handlers.UserHandler.GetAdmins)
 		admin.PATCH("/orders/:id", handlers.OrderHandler.UpdateOrderStatus)
+		admin.POST("/products", handlers.ProductHandler.CreateProduct)
+		admin.PUT("/products/:id", handlers.ProductHandler.UpdateProduct)
+		admin.DELETE("/products/:id", handlers.ProductHandler.DeleteProduct)
 	}
 }

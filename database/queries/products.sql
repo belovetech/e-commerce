@@ -5,9 +5,9 @@ SELECT id, name, description, price, stock, is_available FROM products;
 SELECT id, name, description, price, stock, is_available FROM products WHERE id = $1;
 
 -- name: CreateProduct :one
-INSERT INTO products (name, description, price, stock)
-VALUES ($1, $2, $3, $4)
-RETURNING id, name, description, price, stock, created_at;
+INSERT INTO products (name, description, price, stock, created_by)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, name, description, price, stock, created_at, updated_at, created_by;
 
 -- name: UpdateProduct :one
 UPDATE products

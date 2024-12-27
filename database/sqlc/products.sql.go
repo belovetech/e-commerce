@@ -12,9 +12,9 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :one
-INSERT INTO products (name, description, price, stock)
-VALUES ($1, $2, $3, $4)
-RETURNING id, name, description, price, stock, created_at
+INSERT INTO products (name, description, price, stock, created_by)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, name, description, price, stock, created_at, created_by
 `
 
 type CreateProductParams struct {
@@ -22,6 +22,7 @@ type CreateProductParams struct {
 	Description sql.NullString `json:"description"`
 	Price       string         `json:"price"`
 	Stock       int32          `json:"stock"`
+	CreatedBy   int32          `json:"created_by"`
 }
 
 type CreateProductRow struct {
@@ -31,6 +32,7 @@ type CreateProductRow struct {
 	Price       string         `json:"price"`
 	Stock       int32          `json:"stock"`
 	CreatedAt   time.Time      `json:"created_at"`
+	CreatedBy   int32          `json:"created_by"`
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (CreateProductRow, error) {
@@ -39,6 +41,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (C
 		arg.Description,
 		arg.Price,
 		arg.Stock,
+		arg.CreatedBy,
 	)
 	var i CreateProductRow
 	err := row.Scan(
@@ -48,6 +51,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (C
 		&i.Price,
 		&i.Stock,
 		&i.CreatedAt,
+		&i.CreatedBy,
 	)
 	return i, err
 }
