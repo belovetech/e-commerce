@@ -9,38 +9,81 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	apiVersion = "/api/v1"
+)
+
+type Handler struct {
+	PingHandler    *handlers.PingHandler
+	AuthHandler    *handlers.AuthHandler
+	UserHandler    *handlers.UserHandler
+	ProductHandler *handlers.ProductHandler
+	OrderHandler   *handlers.OrderHandler
+}
+
+func initializeHandlers(dbConn *sql.DB, queries *sqlc.Queries) *Handler {
+	return &Handler{
+		PingHandler:    handlers.NewPingHandler(),
+		AuthHandler:    handlers.NewAuthHandler(queries),
+		UserHandler:    handlers.NewUserHandler(queries),
+		ProductHandler: handlers.NewProductHandler(queries),
+		OrderHandler:   handlers.NewOrderHandler(dbConn, queries),
+	}
+}
+
 func SetupRoutes(router *gin.Engine, dbConn *sql.DB) {
 	queries := sqlc.New(dbConn)
-	public := router.Group("/api")
+	handlers := initializeHandlers(dbConn, queries)
 
-	// handlers
-	pingHandler := handlers.NewPingHandler()
-	authHandler := handlers.NewAuthHandler(queries)
-	userHandler := handlers.NewUserHandler(queries)
-	productHandler := handlers.NewProductHandler(queries)
-	orderHandler := handlers.NewOrderHandler(dbConn, queries)
+	setupPingRoutes(router, handlers)
+	setupAuthRoutes(router, handlers)
+	setupOrderRoutes(router, handlers)
+	setupProductRoutes(router, handlers)
+	setupAdminRoutes(router, handlers)
 
-	// public routes
-	public.GET("/ping", pingHandler.Ping)
-	public.POST("/register", authHandler.RegisterUser)
-	public.POST("/login", authHandler.Login)
+}
 
-	// protected routes
-	protected := router.Group("/api")
-	protected.Use(middlewares.AuthMiddleware())
+func setupPingRoutes(router *gin.Engine, handlers *Handler) {
+	v1 := router.Group(apiVersion)
+	v1.GET("/ping", handlers.PingHandler.Ping)
+}
 
-	// order routes
-	protected.POST("/orders", orderHandler.CreateOrder)
-	protected.GET("/orders", orderHandler.GetUserOrders)
-	protected.DELETE("/orders/:id/cancel", orderHandler.CancelOrder)
+func setupAuthRoutes(router *gin.Engine, handlers *Handler) {
+	v1 := router.Group(apiVersion)
+	auth := v1.Group("/auth")
+	{
+		auth.POST("/register", handlers.AuthHandler.RegisterUser)
+		auth.POST("/login", handlers.AuthHandler.Login)
+	}
+}
 
-	// product routes
-	protected.GET("/products", productHandler.GetProducts)
+func setupOrderRoutes(router *gin.Engine, handlers *Handler) {
+	v1 := router.Group(apiVersion)
+	order := v1.Group("/orders")
+	{
+		order.Use(middlewares.AuthMiddleware())
+		order.POST("", handlers.OrderHandler.CreateOrder)
+		order.GET("", handlers.OrderHandler.GetUserOrders)
+		order.PATCH("/:id/cancel", handlers.OrderHandler.CancelOrder)
+	}
+}
 
-	// admin routes
-	admin := protected.Group("/admins")
-	admin.Use(middlewares.AdminMiddleware())
-	admin.GET("/", userHandler.GetAdmins)
-	admin.POST("/update-order-status", orderHandler.UpdateOrderStatus)
+func setupProductRoutes(router *gin.Engine, handlers *Handler) {
+	v1 := router.Group(apiVersion)
+	product := v1.Group("/products")
+	{
+		product.Use(middlewares.AuthMiddleware())
+		product.GET("", handlers.ProductHandler.GetProducts)
+	}
+}
 
+func setupAdminRoutes(router *gin.Engine, handlers *Handler) {
+	v1 := router.Group(apiVersion)
+	admin := v1.Group("/admins")
+	{
+		admin.Use(middlewares.AuthMiddleware())
+		admin.Use(middlewares.AdminMiddleware())
+		admin.GET("", handlers.UserHandler.GetAdmins)
+		admin.PATCH("/orders/:id", handlers.OrderHandler.UpdateOrderStatus)
+	}
 }

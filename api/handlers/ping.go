@@ -4,8 +4,8 @@ import "github.com/gin-gonic/gin"
 
 type PingHandler struct{}
 
-func NewPingHandler() PingHandler {
-	return PingHandler{}
+func NewPingHandler() *PingHandler {
+	return &PingHandler{}
 }
 
 func (h *PingHandler) Ping(c *gin.Context) {
